@@ -4,3 +4,5 @@ BMI500 homework 8
 Command
 
 python3 deid.py id.text De_name_Result.phi
+
+Print out result in the file: 'Print_result.rtf'
