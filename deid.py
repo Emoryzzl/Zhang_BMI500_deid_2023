@@ -142,8 +142,6 @@ def deid_phone(text_path= 'id.text', output_path = 'phone.phi'):
                     chunk = ''
                 
 if __name__== "__main__":
-        
-    
-    
-    deid_phone(sys.argv[1], sys.argv[2])
+    cProfile.run("deid_phone(sys.argv[1], sys.argv[2])")   
+    #deid_phone(sys.argv[1], sys.argv[2])
     
