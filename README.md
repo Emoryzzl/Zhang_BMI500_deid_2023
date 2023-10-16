@@ -3,4 +3,4 @@ BMI500 homework 8
 
 Command
 
-python3 deid.py id.text name.phi
+python3 deid.py id.text De_name_Result.phi
