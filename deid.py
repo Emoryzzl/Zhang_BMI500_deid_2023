@@ -1,11 +1,9 @@
 import re
 import sys
+
+
 phone_pattern ='(\d{3}[-\.\s/]??\d{3}[-\.\s/]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s/]??\d{4})'
-
-# compiling the reg_ex would save sime time!
 ph_reg = re.compile(phone_pattern)
-
-
 def check_for_phone(patient,note,chunk, output_handle):
     """
     Inputs:
@@ -44,6 +42,48 @@ def check_for_phone(patient,note,chunk, output_handle):
             
             # write the result to one line of output
             output_handle.write(result+'\n')
+
+
+name_pattern = r'\b[A-Z][a-z]+ [A-Z][a-z]+\b'
+name_reg = re.compile(name_pattern)
+def check_for_name(patient, note, chunk, output_handle):
+    """
+    Inputs:
+        - patient: Patient Number, will be printed in each occurrence of personal information found
+        - note: Note Number, will be printed in each occurrence of personal information found
+        - chunk: one whole record of a patient
+        - output_handle: an opened file handle. The results will be written to this file.
+            To avoid the time-intensive operation of opening and closing the file multiple times
+            during the de-identification process, the file is opened beforehand, and the handle is passed
+            to this function.
+    Logic:
+        Search the entire chunk for names. Find the location of these occurrences
+        relative to the start of the chunk, and output these to the output_handle file.
+        If there are no occurrences, only output "Patient X Note Y" (X and Y are passed in as inputs) in one line.
+        Use the precompiled regular expression to find names.
+    """
+    # The perl code handles texts a bit differently,
+    # we found that adding this offset to start and end positions would produce the same results
+    offset = 27
+
+    # For each new note, the first line should be "Patient X Note Y" and then all the personal information positions
+    output_handle.write(f'Patient {patient}\tNote {note}\n')
+    # Search the whole chunk and find every position that matches the regular expression
+    # For each one, write the results: "Start Start END"
+    # Also, for debugging purposes, display on the screen (and don't write to file)
+    # the start, end, and the actual personal information that we found
+    for match in name_reg.finditer(chunk):
+        # Debug print, 'end=" "' stops print() from adding a new line
+        print(patient, note, end=' ')
+        print((match.start() - offset), match.end() - offset, match.group())
+
+        # Create the string that we want to write to the file ('start start end')
+        #result = f"{match.start() - offset} {match.start() - offset} {match.end() - offset}"
+
+        result = str(match.start()-offset) + ' ' + str(match.start()-offset) +' '+ str(match.end()-offset)
+
+        # Write the result to one line of the output
+        output_handle.write(result + '\n')
 
             
             
@@ -96,7 +136,7 @@ def deid_phone(text_path= 'id.text', output_path = 'phone.phi'):
                 if len(record_end):
                     # Now we have a full patient note stored in `chunk`, along with patient numerb and note number
                     # pass all to check_for_phone to find any phone numbers in note.
-                    check_for_phone(patient,note,chunk.strip(), output_file)
+                    check_for_name(patient,note,chunk.strip(), output_file)
                     
                     # initialize the chunk for the next note to be read
                     chunk = ''
